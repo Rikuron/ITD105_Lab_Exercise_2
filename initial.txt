@@ -1,0 +1,151 @@
+import streamlit as st
+import pandas as pd
+from sklearn.model_selection import KFold, LeaveOneOut, cross_val_score, cross_val_predict
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, log_loss, confusion_matrix, classification_report, roc_auc_score, roc_curve
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import LabelEncoder
+
+# Function to load and preprocess data
+@st.cache_data
+def load_data():
+    df = pd.read_csv('C:/Josh Files/College/4th Year 1st Sem/ITD105/Lab Exercise 2/survey lung cancer.csv')
+    # Clean column names
+    df.columns = df.columns.str.strip()
+    # Encode categorical features
+    le = LabelEncoder()
+    df['GENDER'] = le.fit_transform(df['GENDER'])
+    df['LUNG_CANCER'] = le.fit_transform(df['LUNG_CANCER'])
+    return df
+
+# Function to plot confusion matrix
+def plot_confusion_matrix(cm, classes):
+    fig, ax = plt.subplots()
+    sns.heatmap(cm, annot=True, fmt='d', ax=ax, cmap='Blues')
+    ax.set_xlabel('Predicted labels')
+    ax.set_ylabel('True labels')
+    ax.set_title('Confusion Matrix')
+    ax.xaxis.set_ticklabels(classes)
+    ax.yaxis.set_ticklabels(classes)
+    return fig
+
+# Main app
+def main():
+    st.title('Lung Cancer Prediction Analysis')
+
+    # Load data
+    df = load_data()
+
+    # Sidebar for navigation
+    st.sidebar.title('Navigation')
+    page = st.sidebar.radio('Go to', ['Exploratory Data Analysis', 'Machine Learning Models'])
+
+    if page == 'Exploratory Data Analysis':
+        st.header('Exploratory Data Analysis')
+
+        # Show raw data
+        st.subheader('Raw Data')
+        st.dataframe(df)
+
+        # Show data statistics
+        st.subheader('Data Statistics')
+        st.write(df.describe())
+
+        # Show visualizations
+        st.subheader('Data Visualizations')
+        
+        # Count plots for categorical features
+        cat_features = ['GENDER', 'SMOKING', 'YELLOW_FINGERS', 'ANXIETY', 'PEER_PRESSURE', 
+                        'CHRONIC DISEASE', 'FATIGUE', 'ALLERGY', 'WHEEZING', 'ALCOHOL CONSUMING', 
+                        'COUGHING', 'SHORTNESS OF BREATH', 'SWALLOWING DIFFICULTY', 'CHEST PAIN']
+        
+        for feature in cat_features:
+            fig, ax = plt.subplots()
+            sns.countplot(x=feature, data=df, ax=ax)
+            st.pyplot(fig)
+
+    elif page == 'Machine Learning Models':
+        st.header('Machine Learning Models')
+
+        # Define features (X) and target (y)
+        X = df.drop('LUNG_CANCER', axis=1)
+        y = df['LUNG_CANCER']
+
+        # Model selection
+        model_type = st.selectbox('Choose a cross-validation method', ['K-Fold Cross-Validation', 'Leave-One-Out Cross-Validation'])
+
+        if model_type == 'K-Fold Cross-Validation':
+            st.subheader('Logistic Regression with K-Fold Cross-Validation')
+            # K-Fold CV
+            kfold = KFold(n_splits=10, shuffle=True, random_state=42)
+            model = LogisticRegression(solver='liblinear')
+
+            # Predictions
+            y_pred = cross_val_predict(model, X, y, cv=kfold)
+            y_pred_proba = cross_val_predict(model, X, y, cv=kfold, method='predict_proba')[:, 1]
+
+            # Performance Metrics
+            st.write('**Classification Accuracy:**', accuracy_score(y, y_pred))
+            st.write('**Logarithmic Loss:**', log_loss(y, y_pred_proba))
+            
+            # Confusion Matrix
+            st.write('**Confusion Matrix:**')
+            cm = confusion_matrix(y, y_pred)
+            fig = plot_confusion_matrix(cm, classes=['No Cancer', 'Cancer'])
+            st.pyplot(fig)
+
+            # Classification Report
+            st.write('**Classification Report:**')
+            st.text(classification_report(y, y_pred, target_names=['No Cancer', 'Cancer']))
+
+            # ROC Curve
+            st.write('**Area under ROC Curve:**', roc_auc_score(y, y_pred_proba))
+            fpr, tpr, _ = roc_curve(y, y_pred_proba)
+            fig, ax = plt.subplots()
+            ax.plot(fpr, tpr, label='Logistic Regression')
+            ax.plot([0, 1], [0, 1], 'k--')
+            ax.set_xlabel('False Positive Rate')
+            ax.set_ylabel('True Positive Rate')
+            ax.set_title('ROC Curve')
+            ax.legend(loc='best')
+            st.pyplot(fig)
+
+        elif model_type == 'Leave-One-Out Cross-Validation':
+            st.subheader('Logistic Regression with Leave-One-Out Cross-Validation')
+            # LOOCV
+            loocv = LeaveOneOut()
+            model = LogisticRegression(solver='liblinear')
+
+            # Predictions
+            y_pred = cross_val_predict(model, X, y, cv=loocv)
+            y_pred_proba = cross_val_predict(model, X, y, cv=loocv, method='predict_proba')[:, 1]
+
+            # Performance Metrics
+            st.write('**Classification Accuracy:**', accuracy_score(y, y_pred))
+            st.write('**Logarithmic Loss:**', log_loss(y, y_pred_proba))
+
+            # Confusion Matrix
+            st.write('**Confusion Matrix:**')
+            cm = confusion_matrix(y, y_pred)
+            fig = plot_confusion_matrix(cm, classes=['No Cancer', 'Cancer'])
+            st.pyplot(fig)
+
+            # Classification Report
+            st.write('**Classification Report:**')
+            st.text(classification_report(y, y_pred, target_names=['No Cancer', 'Cancer']))
+
+            # ROC Curve
+            st.write('**Area under ROC Curve:**', roc_auc_score(y, y_pred_proba))
+            fpr, tpr, _ = roc_curve(y, y_pred_proba)
+            fig, ax = plt.subplots()
+            ax.plot(fpr, tpr, label='Logistic Regression')
+            ax.plot([0, 1], [0, 1], 'k--')
+            ax.set_xlabel('False Positive Rate')
+            ax.set_ylabel('True Positive Rate')
+            ax.set_title('ROC Curve')
+            ax.legend(loc='best')
+            st.pyplot(fig)
+
+if __name__ == '__main__':
+    main()

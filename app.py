@@ -1,152 +1,158 @@
-
+import io
 import streamlit as st
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from sklearn.model_selection import KFold, LeaveOneOut, cross_val_score, cross_val_predict
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, log_loss, confusion_matrix, classification_report, roc_auc_score, roc_curve
-import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
+import textwrap
+import math
 
-# Function to load and preprocess data
-@st.cache_data
-def load_data():
-    df = pd.read_csv('C:/Josh Files/College/4th Year 1st Sem/ITD105/Lab Exercise 2/survey lung cancer.csv')
-    # Clean column names
-    df.columns = df.columns.str.strip()
-    # Encode categorical features
-    le = LabelEncoder()
-    df['GENDER'] = le.fit_transform(df['GENDER'])
-    df['LUNG_CANCER'] = le.fit_transform(df['LUNG_CANCER'])
-    return df
+# Page Config
+st.set_page_config(page_title="ITD105: Lab 2 - Lung Cancer Prediction App", page_icon="🫁", layout="wide")
+st.title("ITD105: Lab Exercise 2 - Lung Cancer Prediction App")
 
-# Function to plot confusion matrix
-def plot_confusion_matrix(cm, classes):
-    fig, ax = plt.subplots()
-    sns.heatmap(cm, annot=True, fmt='d', ax=ax, cmap='Blues')
-    ax.set_xlabel('Predicted labels')
-    ax.set_ylabel('True labels')
-    ax.set_title('Confusion Matrix')
-    ax.xaxis.set_ticklabels(classes)
-    ax.yaxis.set_ticklabels(classes)
-    return fig
+# Title of the app
+st.markdown('# 🫁 Lung Cancer Prediction App')
+st.write("Welcome to the Lung Cancer Prediction App. This project was made as fulfillment for my requirements in my ITD105 Course. This dashboard was made using:")
+st.write("1. Streamlit for the dashboard")
+st.write("2. Plotly, Matplotlib, and Seaborn for the charts and data visualization")
+st.write("3. Scikit-learn for the machine learning models")
+st.write("4. Pandas for the data manipulation")
+st.write("5. NumPy for the numerical operations")
 
-# Main app
-def main():
-    st.title('Lung Cancer Prediction Analysis')
+st.markdown("---")
 
-    # Load data
-    df = load_data()
+# Load CSV
+df = pd.read_csv('survey lung cancer.csv')
 
-    # Sidebar for navigation
-    st.sidebar.title('Navigation')
-    page = st.sidebar.radio('Go to', ['Exploratory Data Analysis', 'Machine Learning Models'])
+tab1, tab2, tab3 = st.tabs(["📊 Data Overview", "⚙️ Data Preprocessing", "🤖 Machine Learning Models"])
 
-    if page == 'Exploratory Data Analysis':
-        st.header('Exploratory Data Analysis')
+# Tab 1: Data Overview
+# Initial loading and description of the dataset
+with tab1:
+    st.header("📊 Data Overview")
 
-        # Show raw data
-        st.subheader('Raw Data')
-        st.dataframe(df)
+    st.subheader('Raw Data')
+    st.write(df.head())
 
-        # Show data statistics
-        st.subheader('Data Statistics')
+    # Source of the data
+    st.write("The dataset briefly displayed above is taken from the Lung Cancer dataset from kaggle. For reference, here is the link: https://www.kaggle.com/datasets/nancyalaswad90/lung-cancer")
+    st.write("The dataset contains information about the patients and their lung cancer status.")
+
+    # Description of the data
+    buffer = io.StringIO()
+    df.info(buf=buffer)
+    info_text = buffer.getvalue()
+    buffer.close()
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader('Data Information')
+        st.text(info_text)
+
+    with col2:
+        st.markdown(textwrap.dedent("""\
+        As displayed above, the dataset contains 309 rows and 16 columns. The columns are as follows:
+        
+        - GENDER: The gender of the patient
+        - AGE: The age of the patient
+        - SMOKING: Whether the patient is a smoker (Yes or No)
+        - YELLOW_FINGERS: Whether the patient has yellow fingers (Yes or No)
+        - ANXIETY: Whether the patient is anxious (Yes or No)
+        - PEER_PRESSURE: Whether the patient is under peer pressure (Yes or No)
+        - CHRONIC DISEASE: Whether the patient has a chronic disease (Yes or No)
+        - FATIGUE: Whether the patient is fatigued (Yes or No)
+        - ALLERGY: Whether the patient is allergic (Yes or No)
+        - WHEEZING: Whether the patient wheezes (Yes or No)
+        - ALCOHOL CONSUMING: Whether the patient consumes alcohol (Yes or No)
+        - COUGHING: Whether the patient coughs (Yes or No)
+        - SHORTNESS OF BREATH: Whether the patient has shortness of breath (Yes or No)
+        - SWALLOWING DIFFICULTY: Whether the patient has difficulty swallowing (Yes or No)
+        - CHEST PAIN: Whether the patient has chest pain (Yes or No)
+
+        **Target Variable:**
+
+        - LUNG_CANCER: Whether the patient has lung cancer (Yes or No)
+        """))
+    
+    st.markdown("---")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown("**Missing Values:**")
+        st.write(df.isnull().sum())
+
+    with col2:
+        st.markdown("**Data Types:**")
+        st.write(df.dtypes)
+
+    with col3:
+        st.markdown("**Data Statistics:**")
         st.write(df.describe())
 
-        # Show visualizations
-        st.subheader('Data Visualizations')
-        
-        # Count plots for categorical features
-        cat_features = ['GENDER', 'SMOKING', 'YELLOW_FINGERS', 'ANXIETY', 'PEER_PRESSURE', 
-                        'CHRONIC DISEASE', 'FATIGUE', 'ALLERGY', 'WHEEZING', 'ALCOHOL CONSUMING', 
-                        'COUGHING', 'SHORTNESS OF BREATH', 'SWALLOWING DIFFICULTY', 'CHEST PAIN']
-        
-        for feature in cat_features:
-            fig, ax = plt.subplots()
-            sns.countplot(x=feature, data=df, ax=ax)
-            st.pyplot(fig)
+    st.markdown("---")
 
-    elif page == 'Machine Learning Models':
-        st.header('Machine Learning Models')
+    # Data Visualization
+    st.subheader("Data Visualization")
+    
+    target_column = 'LUNG_CANCER'
+    feature_columns = [col for col in df.columns if col != target_column]
 
-        # Define features (X) and target (y)
-        X = df.drop('LUNG_CANCER', axis=1)
-        y = df['LUNG_CANCER']
+    # Helper to decide categorical vs numeric
+    def is_categorical(series, max_unique=10):
+        return series.dtype == 'object' or series.nunique(dropna=False) <= max_unique
 
-        # Model selection
-        model_type = st.selectbox('Choose a cross-validation method', ['K-Fold Cross-Validation', 'Leave-One-Out Cross-Validation'])
+    # 1) All features on one matplotlib figure
+    n = len(feature_columns)
+    ncols = 3
+    nrows = math.ceil(n / ncols)
+    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 5, nrows * 4))
+    axes = axes.flatten() if n > 1 else [axes]
 
-        if model_type == 'K-Fold Cross-Validation':
-            st.subheader('Logistic Regression with K-Fold Cross-Validation')
-            # K-Fold CV
-            kfold = KFold(n_splits=10, shuffle=True, random_state=42)
-            model = LogisticRegression(solver='liblinear')
+    for i, col in enumerate(feature_columns):
+        ax = axes[i]
+        if is_categorical(df[col]):
+            sns.countplot(x=df[col].astype(str), ax=ax, order=df[col].astype(str).value_counts().index)
+            ax.set_xlabel(col)
+            ax.set_ylabel('Count')
+            ax.tick_params(axis='x', rotation=45)
+        else:
+            sns.histplot(data=df, x=col, kde=True, ax=ax, bins=20)
+            ax.set_xlabel(col)
+            ax.set_ylabel('Frequency')
+        ax.set_title(col)
 
-            # Predictions
-            y_pred = cross_val_predict(model, X, y, cv=kfold)
-            y_pred_proba = cross_val_predict(model, X, y, cv=kfold, method='predict_proba')[:, 1]
+    # Hide any unused subplots
+    for j in range(i + 1, len(axes)):
+        axes[j].set_visible(False)
 
-            # Performance Metrics
-            st.write('**Classification Accuracy:**', accuracy_score(y, y_pred))
-            st.write('**Logarithmic Loss:**', log_loss(y, y_pred_proba))
-            
-            # Confusion Matrix
-            st.write('**Confusion Matrix:**')
-            cm = confusion_matrix(y, y_pred)
-            fig = plot_confusion_matrix(cm, classes=['No Cancer', 'Cancer'])
-            st.pyplot(fig)
+    plt.tight_layout()
+    st.pyplot(fig, clear_figure=True)
 
-            # Classification Report
-            st.write('**Classification Report:**')
-            st.text(classification_report(y, y_pred, target_names=['No Cancer', 'Cancer']))
+    # 2) Target variable on its own figure
+    fig_t, ax_t = plt.subplots(figsize=(6, 4))
+    if is_categorical(df[target_column]):
+        sns.countplot(x=df[target_column].astype(str), ax=ax_t, order=df[target_column].astype(str).value_counts().index)
+        ax_t.set_ylabel('Count')
+        ax_t.tick_params(axis='x', rotation=0)
+    else:
+        sns.histplot(data=df, x=target_column, kde=True, ax=ax_t, bins=20)
+        ax_t.set_ylabel('Frequency')
+    ax_t.set_xlabel(target_column)
+    ax_t.set_title(f'Target: {target_column}')
+    plt.tight_layout()
+    st.pyplot(fig_t, clear_figure=True)
 
-            # ROC Curve
-            st.write('**Area under ROC Curve:**', roc_auc_score(y, y_pred_proba))
-            fpr, tpr, _ = roc_curve(y, y_pred_proba)
-            fig, ax = plt.subplots()
-            ax.plot(fpr, tpr, label='Logistic Regression')
-            ax.plot([0, 1], [0, 1], 'k--')
-            ax.set_xlabel('False Positive Rate')
-            ax.set_ylabel('True Positive Rate')
-            ax.set_title('ROC Curve')
-            ax.legend(loc='best')
-            st.pyplot(fig)
+with tab2:
+    st.header("⚙️ Data Preprocessing")
 
-        elif model_type == 'Leave-One-Out Cross-Validation':
-            st.subheader('Logistic Regression with Leave-One-Out Cross-Validation')
-            # LOOCV
-            loocv = LeaveOneOut()
-            model = LogisticRegression(solver='liblinear')
-
-            # Predictions
-            y_pred = cross_val_predict(model, X, y, cv=loocv)
-            y_pred_proba = cross_val_predict(model, X, y, cv=loocv, method='predict_proba')[:, 1]
-
-            # Performance Metrics
-            st.write('**Classification Accuracy:**', accuracy_score(y, y_pred))
-            st.write('**Logarithmic Loss:**', log_loss(y, y_pred_proba))
-
-            # Confusion Matrix
-            st.write('**Confusion Matrix:**')
-            cm = confusion_matrix(y, y_pred)
-            fig = plot_confusion_matrix(cm, classes=['No Cancer', 'Cancer'])
-            st.pyplot(fig)
-
-            # Classification Report
-            st.write('**Classification Report:**')
-            st.text(classification_report(y, y_pred, target_names=['No Cancer', 'Cancer']))
-
-            # ROC Curve
-            st.write('**Area under ROC Curve:**', roc_auc_score(y, y_pred_proba))
-            fpr, tpr, _ = roc_curve(y, y_pred_proba)
-            fig, ax = plt.subplots()
-            ax.plot(fpr, tpr, label='Logistic Regression')
-            ax.plot([0, 1], [0, 1], 'k--')
-            ax.set_xlabel('False Positive Rate')
-            ax.set_ylabel('True Positive Rate')
-            ax.set_title('ROC Curve')
-            ax.legend(loc='best')
-            st.pyplot(fig)
-
-if __name__ == '__main__':
-    main()
+    
