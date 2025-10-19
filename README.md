@@ -117,7 +117,6 @@ ITD105-Lab-Exercise-2/  <br>
 ├── seaice.csv                          # Sea ice extent dataset    <br>
 ├── lung_logistic.pkl                   # Trained lung cancer model <br>
 ├── seaice_linear.pkl                   # Trained sea ice model <br>
-├── ITD105 – Lab Exercises #2.docx      # Assignment requirements   <br>
 ├── requirements.txt                    # Python dependencies   <br>
 └── README.md                          # Project documentation  <br>
 
