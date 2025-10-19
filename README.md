@@ -2,6 +2,8 @@
 
 A comprehensive Streamlit dashboard showcasing machine learning models for both classification and regression tasks, developed as part of ITD105 coursework.
 
+Live Demo Link: [Streamlit Community Cloud App](https://rikuron-itd105-lab-exercise-2-app-zaxtnk.streamlit.app)
+
 ## 🎯 Project Overview
 
 This project demonstrates the implementation and comparison of machine learning models using two distinct datasets:
