@@ -1,5 +1,3 @@
-    
-
 # ITD105: Lab Exercise 2 - Classification and Regression Machine Learning Models
 
 A comprehensive Streamlit dashboard showcasing machine learning models for both classification and regression tasks, developed as part of ITD105 coursework.
@@ -14,7 +12,6 @@ This project demonstrates the implementation and comparison of machine learning 
 ## 🚀 Features
 
 ### Part 1: Lung Cancer Prediction App 🫁
-
 - **Data Overview**: Comprehensive analysis of lung cancer survey data
 - **Data Preprocessing**: Feature encoding, scaling, and class imbalance handling
 - **Model Comparison**: K-Fold vs Leave-One-Out Cross Validation
@@ -22,7 +19,6 @@ This project demonstrates the implementation and comparison of machine learning 
 - **Model Optimization**: Grid Search for hyperparameter tuning
 
 ### Part 2: Sea Ice Extent Prediction App 🧊
-
 - **Data Overview**: Analysis of daily sea ice extent data (1978-2019)
 - **Data Preprocessing**: Data cleaning and feature engineering
 - **Model Comparison**: Different regression techniques
@@ -32,14 +28,12 @@ This project demonstrates the implementation and comparison of machine learning 
 ## 📊 Datasets
 
 ### Lung Cancer Dataset
-
 - **Source**: [Kaggle - Lung Cancer Dataset](https://www.kaggle.com/datasets/nancyalaswad90/lung-cancer)
 - **Size**: 309 rows × 16 columns
 - **Features**: Patient demographics and symptoms
 - **Target**: Lung cancer diagnosis (Yes/No)
 
 ### Sea Ice Extent Dataset
-
 - **Source**: [Kaggle - Daily Sea Ice Extent Data](https://www.kaggle.com/datasets/nsidcorg/daily-sea-ice-extent-data)
 - **Size**: 26,354 rows × 7 columns
 - **Features**: Date components and hemisphere data
@@ -56,18 +50,17 @@ This project demonstrates the implementation and comparison of machine learning 
 ## 📦 Installation
 
 1. **Clone the repository**
-
    ```bash
    git clone <repository-url>
    cd ITD105-Lab-Exercise-2
    ```
-2. **Install required packages**
 
+2. **Install required packages**
    ```bash
    pip install -r requirements.txt
    ```
-3. **Run the application**
 
+3. **Run the application**
    ```bash
    streamlit run app.py
    ```
@@ -91,14 +84,12 @@ scikit-learn>=1.3.0
 3. Switch between "Part 1" and "Part 2" tabs
 
 ### Part 1: Lung Cancer Prediction
-
 1. **Data Overview**: Explore the dataset structure and visualizations
 2. **Data Preprocessing**: Review data cleaning and encoding steps
 3. **Model Comparison**: Compare K-Fold vs LOOCV performance
 4. **Model Application**: Input patient data for real-time predictions
 
 ### Part 2: Sea Ice Extent Prediction
-
 1. **Data Overview**: Analyze sea ice data and climate trends
 2. **Data Preprocessing**: Review data cleaning procedures
 3. **Model Comparison**: Evaluate different regression models
@@ -107,14 +98,12 @@ scikit-learn>=1.3.0
 ## 📈 Model Performance
 
 ### Classification Model (Lung Cancer)
-
 - **Algorithm**: Logistic Regression with L1 regularization
 - **Cross-Validation**: 10-Fold Stratified K-Fold
 - **Metrics**: Accuracy, ROC-AUC, Precision, Recall, F1-Score
 - **Class Balancing**: Balanced class weights
 
 ### Regression Model (Sea Ice Extent)
-
 - **Algorithm**: Linear Regression
 - **Cross-Validation**: K-Fold Cross Validation
 - **Metrics**: MSE, MAE, R² Score
@@ -122,15 +111,15 @@ scikit-learn>=1.3.0
 
 ## 📁 Project Structure
 
-ITD105-Lab-Exercise-2/
-├── app.py                              # Main Streamlit application 
-├── survey lung cancer.csv              # Lung cancer dataset   
-├── seaice.csv                          # Sea ice extent dataset    
-├── lung_logistic.pkl                   # Trained lung cancer model 
-├── seaice_linear.pkl                   # Trained sea ice model 
-├── ITD105 – Lab Exercises #2.docx      # Assignment requirements 
-├── requirements.txt                    # Python dependencies   
-└── README.md                          # Project documentation  
+ITD105-Lab-Exercise-2/  <br>
+├── app.py                              # Main Streamlit application <br>
+├── survey lung cancer.csv              # Lung cancer dataset   <br>
+├── seaice.csv                          # Sea ice extent dataset    <br>
+├── lung_logistic.pkl                   # Trained lung cancer model <br>
+├── seaice_linear.pkl                   # Trained sea ice model <br>
+├── ITD105 – Lab Exercises #2.docx      # Assignment requirements   <br>
+├── requirements.txt                    # Python dependencies   <br>
+└── README.md                          # Project documentation  <br>
 
 ## 🔬 Key Features
 
@@ -142,14 +131,12 @@ ITD105-Lab-Exercise-2/
 - Downloadable trained models
 
 ### Machine Learning Techniques
-
 - Cross-validation strategies
 - Hyperparameter optimization
 - Feature importance analysis
 - Model comparison frameworks
 
 ### Data Science Workflow
-
 - Exploratory data analysis
 - Data preprocessing pipelines
 - Model training and evaluation
@@ -158,7 +145,6 @@ ITD105-Lab-Exercise-2/
 ## 🎓 Educational Value
 
 This project demonstrates:
-
 - **Classification vs Regression**: Different ML problem types
 - **Cross-Validation**: Model evaluation techniques
 - **Data Preprocessing**: Real-world data cleaning
